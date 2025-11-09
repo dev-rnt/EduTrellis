@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+{% include 'message.html' %}
+
+<style>
+/* Spinner Fix */
+.login-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-spinner {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spinner-rotate 0.6s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
+
+<div class="login-background">
+  <div class="login-card">
+    <div class="login-form-container">
+      <div class="login-welcome">Welcome back</div>
+      
+      <form class="login-form" id="loginForm" novalidate method="post" action="{% url 'login' %}" autocomplete="on">
+        {% csrf_token %}
+        
+        {% if request.GET.next %}
+          <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+        
+        <!-- PASSWORD LOGIN -->
+        <div id="regularLoginSection">
+          <div class="form-field">
+            <label for="idemail">Email</label>
+            <input type="email" name="email" id="idemail" autocomplete="email" required placeholder="Enter your email">
+          </div>
+          
+          <div class="form-field">
+            <label for="idpassword">Password</label>
+            <input type="password" name="password" id="idpassword" autocomplete="current-password" required placeholder="Enter your password">
+          </div>
+          
+          <div class="login-row">
+            <label class="remember-me">
+              <input type="checkbox" name="remember" id="rememberme">
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-password" id="forgotPasswordBtn">Forgot password?</a>
+          </div>
+          
+          <!-- Submit with loader -->
+          <button type="submit" class="login-btn" id="loginSubmitBtn">
+            <span class="btn-label">Log in</span>
+            <span class="btn-spinner" id="loginBtnSpinner" style="display:none;">
+              <span class="spinner"></span>
+            </span>
+          </button>
+          
+          <div class="login-signup">
+            Don't have an account? <a href="{% url 'signup' %}">Sign up</a>
+          </div>
+        </div>
+        
+        <!-- Form overlay while submitting -->
+        <div id="formOverlay" style="display:none">
+          <div class="overlay-spinner">
+            <span class="spinner"></span>
+          </div>
+        </div>
+      </form>
+    </div>
+    
+    <div class="login-image" aria-hidden="true">
+      <picture>
+        <source media="(min-width: 960px)" srcset="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop">
+        <source media="(min-width: 600px)" srcset="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop">
+        <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=900&auto=format&fit=crop" alt="Login illustration">
+      </picture>
+    </div>
+  </div>
+</div>
+
+
+<!-- Forgot Password Modal -->
+<div id="forgotPasswordModal" class="modal" style="display:none">
+  <div class="modal-content">
+    <span class="close-modal" id="closeModal">&times;</span>
+    
+    <!-- Step 1: Enter Email -->
+    <div id="forgotStep1" class="modal-step">
+      <h2>Reset Password</h2>
+      <p>Enter your email to receive a password reset OTP</p>
+      
+      <div class="form-field">
+        <label for="resetEmail">Email</label>
+        <input type="email" id="resetEmail" name="resetemail" autocomplete="email" required placeholder="Enter your email">
+      </div>
+      
+      <button type="button" class="login-btn" id="sendOtpBtn">
+        <span class="btn-label">Send OTP</span>
+        <span class="btn-spinner" style="display:none;">
+          <span class="spinner"></span>
+        </span>
+      </button>
+      
+      <button type="button" class="cancel-btn" id="cancelStep1Btn">Cancel</button>
+      <div id="forgotMessage" class="message" style="margin-top:12px"></div>
+    </div>
+    
+    <!-- Step 2: Verify OTP -->
+    <div id="forgotStep2" class="modal-step" style="display:none">
+      <h2>Verify OTP</h2>
+      <p>Enter the 6-digit OTP sent to your email</p>
+      
+      <div class="form-field">
+        <label for="resetOtp">OTP Code</label>
+        <input type="text" id="resetOtp" name="otpcode" maxlength="6" autocomplete="one-time-code" inputmode="numeric" pattern="[0-9]{6}" required placeholder="Enter 6-digit OTP">
+      </div>
+      
+      <button type="button" class="login-btn" id="verifyOtpBtn">
+        <span class="btn-label">Verify OTP</span>
+        <span class="btn-spinner" style="display:none;">
+          <span class="spinner"></span>
+        </span>
+      </button>
+      
+      <button type="button" class="resend-link" id="resendOtpBtn">Resend OTP</button>
+      <button type="button" class="cancel-btn" id="cancelStep2Btn">Cancel</button>
+      <div id="otpMessage" class="message" style="margin-top:12px"></div>
+    </div>
+    
+    <!-- Step 3: Reset Password -->
+    <div id="forgotStep3" class="modal-step" style="display:none">
+      <h2>Set New Password</h2>
+      <p>Enter your new password</p>
+      
+      <div class="form-field">
+        <label for="newPassword">New Password</label>
+        <input type="password" id="newPassword" name="newpassword" autocomplete="new-password" required placeholder="At least 8 characters">
+      </div>
+      
+      <div class="form-field">
+        <label for="confirmPassword">Confirm Password</label>
+        <input type="password" id="confirmPassword" name="confirmpassword" autocomplete="new-password" required placeholder="Re-enter password">
+      </div>
+      
+      <button type="button" class="login-btn" id="resetPasswordBtn">
+        <span class="btn-label">Reset Password</span>
+        <span class="btn-spinner" style="display:none;">
+          <span class="spinner"></span>
+        </span>
+      </button>
+      
+      <button type="button" class="cancel-btn" id="cancelStep3Btn">Cancel</button>
+      <div id="resetMessage" class="message" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function() {
+  const form = document.getElementById('loginForm');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  const btnLabel = submitBtn?.querySelector('.btn-label');
+  const btnSpinner = document.getElementById('loginBtnSpinner');
+  const overlay = document.getElementById('formOverlay');
+  
+  // Login form submission
+  if (form) {
+    form.addEventListener('submit', function() {
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('is-loading');
+        if (btnLabel) btnLabel.textContent = 'Logging in...';
+        if (btnSpinner) btnSpinner.style.display = 'inline-flex';
+        if (overlay) overlay.style.display = 'flex';
+      }
+    });
+  }
+  
+  // Forgot Password Modal
+  const modal = document.getElementById('forgotPasswordModal');
+  const forgotBtn = document.getElementById('forgotPasswordBtn');
+  const closeModal = document.getElementById('closeModal');
+  const step1 = document.getElementById('forgotStep1');
+  const step2 = document.getElementById('forgotStep2');
+  const step3 = document.getElementById('forgotStep3');
+  let currentUserId = null;
+  
+  // Open modal
+  forgotBtn?.addEventListener('click', function(e) {
+    e.preventDefault();
+    modal.style.display = 'flex';
+    resetModal();
+  });
+  
+  // Close modal
+  function closeModalFunc() {
+    modal.style.display = 'none';
+    resetModal();
+  }
+  
+  // Close modal handlers
+  closeModal?.addEventListener('click', closeModalFunc);
+  document.getElementById('cancelStep1Btn')?.addEventListener('click', closeModalFunc);
+  document.getElementById('cancelStep2Btn')?.addEventListener('click', closeModalFunc);
+  document.getElementById('cancelStep3Btn')?.addEventListener('click', closeModalFunc);
+  
+  window.addEventListener('click', function(e) {
+    if (e.target === modal) closeModalFunc();
+  });
+  
+  // ESC key to close modal
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modal.style.display === 'flex') {
+      closeModalFunc();
+    }
+  });
+  
+  function resetModal() {
+    step1.style.display = 'block';
+    step2.style.display = 'none';
+    step3.style.display = 'none';
+    document.getElementById('resetEmail').value = '';
+    document.getElementById('resetOtp').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+    currentUserId = null;
+    hideMessages();
+  }
+  
+  function hideMessages() {
+    ['forgotMessage', 'otpMessage', 'resetMessage'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'none';
+        el.className = 'message';
+      }
+    });
+  }
+  
+  function showMessage(elementId, message, isError = false) {
+    const el = document.getElementById(elementId);
+    if (el) {
+      el.textContent = message;
+      el.className = `message ${isError ? 'error' : 'success'}`;
+      el.style.display = 'block';
+    }
+  }
+  
+  function setButtonLoading(button, loading) {
+    const label = button.querySelector('.btn-label');
+    const spinner = button.querySelector('.btn-spinner');
+    button.disabled = loading;
+    if (spinner) spinner.style.display = loading ? 'inline-flex' : 'none';
+  }
+  
+  // Step 1: Send OTP
+  document.getElementById('sendOtpBtn')?.addEventListener('click', async function() {
+    const email = document.getElementById('resetEmail').value.trim();
+    if (!email) {
+      showMessage('forgotMessage', 'Please enter your email', true);
+      return;
+    }
+    
+    setButtonLoading(this, true);
+    hideMessages();
+    
+    try {
+      const response = await fetch("{% url 'forgot_password_request' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `email=${encodeURIComponent(email)}`
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        currentUserId = data.userid;
+        showMessage('forgotMessage', data.message, false);
+        setTimeout(() => {
+          step1.style.display = 'none';
+          step2.style.display = 'block';
+          hideMessages();
+          document.getElementById('resetOtp').focus();
+        }, 1500);
+      } else {
+        showMessage('forgotMessage', data.message, true);
+      }
+    } catch (error) {
+      showMessage('forgotMessage', 'An error occurred. Please try again.', true);
+    } finally {
+      setButtonLoading(this, false);
+    }
+  });
+  
+  // Step 2: Verify OTP
+  document.getElementById('verifyOtpBtn')?.addEventListener('click', async function() {
+    const otp = document.getElementById('resetOtp').value.trim();
+    if (!otp || otp.length !== 6) {
+      showMessage('otpMessage', 'Please enter a valid 6-digit OTP', true);
+      return;
+    }
+    
+    setButtonLoading(this, true);
+    hideMessages();
+    
+    try {
+      const response = await fetch("{% url 'verify_reset_otp' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `userid=${currentUserId}&otpcode=${encodeURIComponent(otp)}`
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage('otpMessage', data.message, false);
+        setTimeout(() => {
+          step2.style.display = 'none';
+          step3.style.display = 'block';
+          hideMessages();
+          document.getElementById('newPassword').focus();
+        }, 1000);
+      } else {
+        showMessage('otpMessage', data.message, true);
+      }
+    } catch (error) {
+      showMessage('otpMessage', 'An error occurred. Please try again.', true);
+    } finally {
+      setButtonLoading(this, false);
+    }
+  });
+  
+  // Resend OTP
+  document.getElementById('resendOtpBtn')?.addEventListener('click', async function() {
+    const email = document.getElementById('resetEmail').value.trim();
+    const sendBtn = document.getElementById('sendOtpBtn');
+    
+    this.disabled = true;
+    this.textContent = 'Sending...';
+    hideMessages();
+    
+    try {
+      const response = await fetch("{% url 'forgot_password_request' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `email=${encodeURIComponent(email)}`
+      });
+      
+      const data = await response.json();
+      
+      if (data.success && data.userid) {
+        currentUserId = data.userid;
+      }
+      showMessage('otpMessage', data.success ? 'OTP resent successfully!' : data.message, !data.success);
+    } catch (error) {
+      showMessage('otpMessage', 'Failed to resend OTP', true);
+    } finally {
+      this.disabled = false;
+      this.textContent = 'Resend OTP';
+    }
+  });
+  
+  // Step 3: Reset Password
+  document.getElementById('resetPasswordBtn')?.addEventListener('click', async function() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (!newPassword || !confirmPassword) {
+      showMessage('resetMessage', 'Please fill in all fields', true);
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      showMessage('resetMessage', 'Passwords do not match', true);
+      return;
+    }
+    
+    if (newPassword.length < 8) {
+      showMessage('resetMessage', 'Password must be at least 8 characters', true);
+      return;
+    }
+    
+    setButtonLoading(this, true);
+    hideMessages();
+    
+    try {
+      const response = await fetch("{% url 'reset_password' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `newpassword=${encodeURIComponent(newPassword)}&confirmpassword=${encodeURIComponent(confirmPassword)}`
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        showMessage('resetMessage', data.message + ' Redirecting...', false);
+        setTimeout(() => {
+          modal.style.display = 'none';
+          window.location.href = "{% url 'login' %}";
+        }, 2000);
+      } else {
+        showMessage('resetMessage', data.message, true);
+      }
+    } catch (error) {
+      showMessage('resetMessage', 'An error occurred. Please try again.', true);
+    } finally {
+      setButtonLoading(this, false);
+    }
+  });
+  
+  // Allow Enter key to submit in each step
+  document.getElementById('resetEmail')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('sendOtpBtn').click();
+    }
+  });
+  
+  document.getElementById('resetOtp')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('verifyOtpBtn').click();
+    }
+  });
+  
+  document.getElementById('confirmPassword')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      document.getElementById('resetPasswordBtn').click();
+    }
+  });
+})();
+</script>
+
+
+{% endblock content %}

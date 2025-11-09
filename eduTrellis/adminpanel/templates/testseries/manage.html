@@ -1,0 +1,132 @@
+{% extends 'admin_dashboard.html' %}
+
+{% block title %}Manage Test Series{% endblock %}
+{% include "message.html" %}
+{% block content %}
+<div class="wrapper">
+  <h1 class="h1">Test Series Management</h1>
+  <p class="small">Create and manage all test series courses</p>
+
+  <div class="nav-buttons">
+    <a href="{% url 'test_series_create' %}" class="btn btn-primary">➕ Add Test Series courses</a>
+  </div>
+
+  <div class="panel">
+    <div class="ad-card-hd">
+      <h3>All test series courses</h3>
+      <div class="ad-filters">
+        <form method="GET" style="display: flex; gap: 8px;">
+          <input type="text" name="search" class="ad-filter-input" placeholder="Search test series..." value="{{ search_query }}">
+          <select name="category" class="ad-filter-select">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+            <option value="{{ category.id }}" {% if category_filter == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="ad-filter-btn">Filter</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="ad-card-bd">
+      {% if page_obj %}
+        <table class="ad-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Tests</th>
+              <th>Questions</th>
+              <th>Total Marks</th>
+              <th>Difficulty</th>
+              <th>Price</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for series in page_obj %}
+              <tr>
+                <td>
+                  <strong>{{ series.title }}</strong>
+                  {% if series.is_featured %}
+                    <span style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-left: 8px;">FEATURED</span>
+                  {% endif %}
+                </td>
+                <td>{{ series.category.name }}</td>
+                <td>
+                  <div style="display: flex; align-items: center; gap: 5px;">
+                    <span style="background: #3b82f6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ series.total_tests }}</span>
+                    {% if series.total_tests > 0 %}
+                      <span style="color: #16a34a;">✓</span>
+                    {% else %}
+                      <span style="color: #dc2626;">⚠</span>
+                    {% endif %}
+                  </div>
+                </td>
+                <td>
+                  <span style="background: #8b5cf6; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">{{ series.total_questions }}</span>
+                </td>
+                <td>
+                  <span style="font-weight: 600; color: #059669;">{{ series.total_marks }}</span>
+                </td>
+                <td>
+                  <span style="background: {% if series.difficulty == 'easy' %}#10b981{% elif series.difficulty == 'medium' %}#f59e0b{% else %}#dc2626{% endif %}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">
+                    {{ series.get_difficulty_display }}
+                  </span>
+                </td>
+                <td>
+                  {% if series.is_free %}
+                    <span style="color: #10b981; font-weight: 600;">FREE</span>
+                  {% else %}
+                    ₹{{ series.price }}
+                  {% endif %}
+                </td>
+                <td>
+                  {% if series.is_active %}
+                    <span style="color: #10b981;">Active</span>
+                  {% else %}
+                    <span style="color: #dc2626;">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                    <a href="{% url 'test_series_detail' pk=series.pk %}" class="btn" style="padding: 4px 8px; font-size: 12px; background: #3b82f6; color: white;">📋 View</a>
+                    <a href="{% url 'test_series_edit' pk=series.pk %}" class="btn" style="padding: 4px 8px; font-size: 12px;">✏️ Edit</a>
+                    <a href="{% url 'test_create' series_pk=series.pk %}" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;">➕ Add Test</a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+          <div style="margin-top: 20px; text-align: center;">
+            <div style="display: inline-flex; gap: 8px;">
+              {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&category={{ category_filter }}" class="btn">Previous</a>
+              {% endif %}
+              
+              <span style="padding: 8px 12px;">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+              
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&category={{ category_filter }}" class="btn">Next</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+      {% else %}
+        <div style="text-align: center; padding: 40px;">
+          <p>No test series found.</p>
+          <a href="{% url 'test_series_create' %}" class="btn btn-primary">Create First Test Series</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

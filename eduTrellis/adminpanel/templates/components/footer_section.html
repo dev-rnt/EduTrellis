@@ -1,0 +1,352 @@
+{% if footer_settings %}
+<!-- Dynamic Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-logo-col">
+            <div class="footer-logo-row">
+                {% if footer_settings.logo %}
+                    <img src="{{ footer_settings.logo.url }}" alt="Footer Logo" class="footer-logo-img">
+                {% else %}
+                    {% load static %}
+                    <img src="{% static 'img/footerlogo.png' %}" alt="Logo" class="footer-logo-img">
+                {% endif %}
+            </div>
+            
+            <div class="footer-mail-row">
+                <span class="footer-mail-label">Mail:</span>
+                <a href="mailto:{{ footer_settings.email }}" class="footer-mail">{{ footer_settings.email }}</a>
+            </div>
+            
+            <div class="footer-appbadges">
+                {% if footer_settings.google_play_url %}
+                    <a href="{{ footer_settings.google_play_url }}" target="_blank">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get on Play Store" class="footer-badge">
+                    </a>
+                {% endif %}
+                {% if footer_settings.app_store_url %}
+                    <a href="{{ footer_settings.app_store_url }}" target="_blank">
+                        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Get on App Store" class="footer-badge">
+                    </a>
+                {% endif %}
+            </div>
+            
+            <!-- Social Media Links with CORRECT Icon Classes -->
+            <div class="footer-social-row">
+                {% if footer_settings.facebook_url %}
+                    <a href="{{ footer_settings.facebook_url }}" class="footer-social social-facebook" title="Facebook" target="_blank">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.twitter_url %}
+                    <a href="{{ footer_settings.twitter_url }}" class="footer-social social-twitter" title="Twitter" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.youtube_url %}
+                    <a href="{{ footer_settings.youtube_url }}" class="footer-social social-youtube" title="YouTube" target="_blank">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.linkedin_url %}
+                    <a href="{{ footer_settings.linkedin_url }}" class="footer-social social-linkedin" title="LinkedIn" target="_blank">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.instagram_url %}
+                    <a href="{{ footer_settings.instagram_url }}" class="footer-social social-instagram" title="Instagram" target="_blank">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.telegram_url %}
+                    <a href="{{ footer_settings.telegram_url }}" class="footer-social social-telegram" title="Telegram" target="_blank">
+                        <i class="fab fa-telegram-plane"></i>
+                    </a>
+                {% endif %}
+                {% if footer_settings.whatsapp_url %}
+                    <a href="{{ footer_settings.whatsapp_url }}" class="footer-social social-whatsapp" title="WhatsApp" target="_blank">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Dynamic Footer Links by Section -->
+        {% for section_key, section_name in footer_sections %}
+            <div class="footer-links-col">
+                <h4>{{ section_name }}</h4>
+                {% for link in footer_links %}
+                    {% if link.section == section_key %}
+                        <a class="footer-link" href="{{ link.url }}">{{ link.title }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Special handling for Business section language selector -->
+                {% if section_key == 'business' %}
+                    <div class="footer-language">
+                        <select class="footer-selectbox">
+                            <option>English</option>
+                            <option>Hindi</option>
+                        </select>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="footer-legal">
+        {{ footer_settings.copyright_text }}
+        {% if footer_legal_links %}
+            {% for legal_link in footer_legal_links %}
+                <span class="footer-dot">&bull;</span>
+                <a href="{{ legal_link.url }}">{{ legal_link.title }}</a>
+            {% endfor %}
+        {% endif %}
+    </div>
+</footer>
+
+
+<style>
+/* Footer styles */
+.footer {
+    background: #1b1c22;
+    color: #b8bac3;
+    font-size: 16px;
+    letter-spacing: 0;
+    padding: 43px 0 12px 0;
+}
+
+.footer-inner {
+    max-width: 1320px;
+    margin: 0 auto 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 26px 12px;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0 40px;
+}
+
+.footer-logo-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    margin-bottom: 7px;
+}
+
+.footer-logo-img {
+    height: 65px;
+}
+
+.footer-logo-text {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.27em;
+    letter-spacing: 1px;
+}
+
+.footer-mail-row {
+    margin-bottom: 16px;
+}
+
+.footer-mail-label {
+    color: #ffd067;
+    font-weight: 600;
+    margin-right: 4px;
+}
+
+.footer-mail {
+    color: #e8e8e8;
+    text-decoration: none;  /* REMOVED UNDERLINE */
+    font-size: 1em;
+    transition: color 0.3s ease;
+}
+
+.footer-mail:hover {
+    color: #ffd067;
+    text-decoration: none;  /* Keep it clean on hover too */
+}
+.footer-appbadges {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.footer-badge {
+    height: 36px;
+    background: #fff;
+    border-radius: 6px;
+}
+
+.footer-social-row {
+    display: flex;
+    gap: 13px;
+    margin-top: 18px;
+}
+
+.footer-social {
+    color: #fff;
+    opacity: 0.9;
+    font-size: 1.2em;
+    transition: color 0.18s, opacity 0.14s, transform 0.3s;
+    background: #252628;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.footer-social i {
+    vertical-align: middle;
+    font-size: 18px;
+}
+
+.footer-social:hover {
+    color: #fff;
+    opacity: 1;
+    transform: translateY(-3px);
+}
+
+/* Social Media Brand Colors */
+.social-facebook {
+    background: #3b5998;
+}
+
+.social-twitter {
+    background: #1da1f2;
+}
+
+.social-youtube {
+    background: #ff0000;
+}
+
+.social-linkedin {
+    background: #0077b5;
+}
+
+.social-instagram {
+    background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+    color: #fff;
+}
+
+.social-telegram {
+    background: #0088cc;
+}
+
+.social-whatsapp {
+    background: #25d366;
+}
+
+.footer-social:hover.social-facebook {
+    background: #2d4373;
+}
+
+.footer-social:hover.social-twitter {
+    background: #1a8cd8;
+}
+
+.footer-social:hover.social-youtube {
+    background: #cc0000;
+}
+
+.footer-social:hover.social-linkedin {
+    background: #005582;
+}
+
+.footer-social:hover.social-instagram {
+    background: #c13584;
+}
+
+.footer-social:hover.social-telegram {
+    background: #0077b5;
+}
+
+.footer-social:hover.social-whatsapp {
+    background: #128c7e;
+}
+
+.footer-links-col {
+    min-width: 158px;
+    line-height: 1.6;
+}
+
+.footer-links-col h4 {
+    color: #ffd067;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    font-size: 16.9px;
+    letter-spacing: .4px;
+}
+
+.footer-link {
+    color: #e8e8e8;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 1em;
+    opacity: 0.88;
+}
+
+.footer-link:hover {
+    color: #ffd067;
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.footer-language {
+    margin-top: 11px;
+}
+
+.footer-selectbox {
+    background: #15161b;
+    border-radius: 7px;
+    color: #f7de9c;
+    padding: 6px 14px;
+    font-size: 1em;
+    border: 1px solid #383939;
+}
+
+.footer-legal {
+    text-align: center;
+    border-top: 1px solid #2e2f34;
+    margin-top: 34px;
+    font-size: 0.97em;
+    color: #7c8696;
+    padding: 14px 0 6px 0;
+    letter-spacing: 0.04em;
+}
+
+.footer-legal a {
+    color: #ffe093;
+    margin: 0 7px;
+    text-decoration: none;
+    font-size: 0.9em;
+    opacity: 0.91;
+}
+
+.footer-legal a:hover {
+    color: #ffd067;
+}
+
+.footer-dot {
+    font-size: 15px;
+    color: #50535a;
+    margin: 0 5px;
+}
+
+@media (max-width: 900px) {
+    .footer-inner {
+        flex-direction: column;
+        gap: 23px;
+    }
+    
+    .footer-logo-col,
+    .footer-links-col {
+        min-width: 0;
+    }
+}
+</style>
+{% endif %}
